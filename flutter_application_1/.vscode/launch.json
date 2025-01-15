@@ -1,0 +1,42 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Flutter macOS Desktop",
+            "request": "launch",
+            "type": "dart",
+            "deviceId": "macos",
+            "program": "lib/main.dart"
+        },
+        {
+            "name": "Flutter Web (Chrome)",
+            "request": "launch",
+            "type": "dart",
+            "deviceId": "chrome",
+            "program": "lib/main.dart"
+        },
+        {
+            "name": "Flutter iOS Simulator",
+            "request": "launch",
+            "type": "dart",
+            "deviceId": "ios",
+            "program": "lib/main.dart"
+        },
+        {
+            "name": "Flutter Android Emulator",
+            "request": "launch",
+            "type": "dart",
+            "deviceId": "emulator-5554",
+            "program": "lib/main.dart"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Run MacOS Desktop and Web (Chrome)",
+            "configurations": [
+                "Flutter Web (Chrome)",
+                "Flutter macOS Desktop"
+            ]
+        }
+    ]
+}
