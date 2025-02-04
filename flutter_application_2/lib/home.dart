@@ -2,7 +2,11 @@ import "package:flutter/material.dart";
 import "./components/theme_button.dart";
 import "./components/color_button.dart";
 import "./components/category_card.dart";
+import "./components/post_card.dart";
+import "./components/restaurant_landscape_card.dart";
 import "./models/food_category.dart";
+import "./models/post.dart";
+import "./models/restaurant.dart";
 import "constants.dart";
 
 class Home extends StatefulWidget {
@@ -28,8 +32,15 @@ class _HomeState extends State<Home> {
         child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 300),
             child: CategoryCard(category: categories[0]))),
-    Container(color: Colors.green),
-    Container(color: Colors.blue)
+    Center(
+        child: Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: PostCard(post: posts[0]),
+    )),
+    Center(
+        child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 400),
+            child: RestaurantLandscapeCard(restaurant: restaurants[0])))
   ];
 
   List<NavigationDestination> appBarDestinations = const [
