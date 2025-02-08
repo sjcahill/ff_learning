@@ -1,60 +1,89 @@
+import 'package:colorize_lumberdash/colorize_lumberdash.dart';
+import 'package:desktop_window/desktop_window.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lumberdash/lumberdash.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-import 'constants.dart';
-import 'home.dart';
+import 'ui/main_screen.dart';
+import 'ui/theme/theme.dart';
+import 'utils.dart';
+import 'providers.dart';
+import 'package:logging/logging.dart' as system_log;
 
-void main() {
-  runApp(const Yummy());
+Future<void> main() async {
+  _setupLogging();
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+  if (isDesktop()) {
+    await DesktopWindow.setWindowSize(const Size(600, 600));
+    await DesktopWindow.setMinWindowSize(const Size(260, 600));
+  }
+  final sharedPrefs = await SharedPreferences.getInstance();
+  runApp(ProviderScope(overrides: [
+    sharedPrefProvider.overrideWithValue(sharedPrefs),
+  ], child: const MyApp()));
 }
 
-class Yummy extends StatefulWidget {
-  const Yummy({super.key});
+void _setupLogging() {
+  putLumberdashToWork(withClients: [
+    ColorizeLumberdash(),
+  ]);
+  system_log.Logger.root.level = system_log.Level.ALL;
+  system_log.Logger.root.onRecord.listen((rec) {
+    debugPrint('${rec.level.name}: ${rec.time}: ${rec.message}');
+  });
+}
+
+class MyApp extends StatefulWidget {
+  const MyApp({super.key});
 
   @override
-  State<Yummy> createState() => _YummyState();
+  State<MyApp> createState() => _MyAppState();
 }
 
-class _YummyState extends State<Yummy> {
-  ThemeMode themeMode = ThemeMode.light;
-  ColorSelection colorSelected = ColorSelection.pink;
-
-  void changeThemeMode(bool useLightMode) {
-    setState(() {
-      themeMode = useLightMode
-          ? ThemeMode.light //
-          : ThemeMode.dark;
-    });
-  }
-
-  void changeColor(int value) {
-    setState(() {
-      colorSelected = ColorSelection.values[value];
-    });
-  }
+class _MyAppState extends State<MyApp> {
+  ThemeMode currentMode = ThemeMode.light;
 
   @override
   Widget build(BuildContext context) {
-    const appTitle = 'Yummy';
-
-    return MaterialApp(
-      title: appTitle,
-      debugShowCheckedModeBanner: false, // Uncomment to remove Debug banner
-      themeMode: themeMode,
-      theme: ThemeData(
-        colorSchemeSeed: colorSelected.color,
-        useMaterial3: true,
-        brightness: Brightness.light,
-      ),
-      darkTheme: ThemeData(
-        colorSchemeSeed: colorSelected.color,
-        useMaterial3: true,
-        brightness: Brightness.dark,
-      ),
-      home: Home(
-        appTitle: appTitle,
-        changeTheme: changeThemeMode,
-        changeColor: changeColor,
-        colorSelected: colorSelected,
+    return PlatformMenuBar(
+      menus: [
+        PlatformMenu(label: 'File', menus: [
+          PlatformMenuItem(
+              label: 'Dark Mode',
+              onSelected: () {
+                setState(() {
+                  currentMode = ThemeMode.dark;
+                });
+              }),
+          PlatformMenuItem(
+              label: 'Light Mode',
+              onSelected: () {
+                setState(() {
+                  currentMode = ThemeMode.light;
+                });
+              }),
+          PlatformMenuItem(
+            label: 'Quit',
+            onSelected: () {
+              setState(() {
+                SystemNavigator.pop();
+              });
+            },
+            shortcut:
+                const SingleActivator(LogicalKeyboardKey.keyQ, meta: true),
+          ),
+        ])
+      ],
+      child: MaterialApp(
+        title: 'Recipes',
+        debugShowCheckedModeBanner: false,
+        themeMode: currentMode,
+        theme: ThemeData(useMaterial3: true, colorScheme: lightColorScheme),
+        darkTheme: ThemeData(useMaterial3: true, colorScheme: darkColorScheme),
+        home: const MainScreen(),
       ),
     );
   }
